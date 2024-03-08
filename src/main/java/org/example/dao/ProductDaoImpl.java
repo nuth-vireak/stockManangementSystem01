@@ -11,10 +11,16 @@ import java.util.*;
 
 public class ProductDaoImpl implements ProductDAO {
 
-    private static final String DB_URL = "jdbc:postgresql://localhost:5432/product_db";
-    private static final String DB_USER = "postgres";
-    private static final String DB_PASSWORD = "1234";
-    private static final String COUNTER_FILE_PATH = System.getProperty("user.home") + File.separator + "backup_counter.txt";
+    private static final String DB_URL = "jdbc:postgresql://localhost:5432/product_db"; // Change this to your database URL
+    private static final String DB_DATABASE = "product_db"; // Change this to your database name
+    private static final String DB_HOST = "localhost"; // Change this to your database host
+    private static final String TB_NAME = "product"; // Change this to your table name
+    private static final String DB_USER = "postgres"; // Change this to your database username
+    private static final String DB_PASSWORD = "1234"; // Change this to your database password
+    private static final String DB_PORT = "5432"; // Change this to your database port
+    private static final String COUNTER_FILE_PATH = System.getProperty("user.home") + File.separator + "backup_counter.txt"; // recommended keep it as it is
+    private static final String PG_VERSION = "15"; // Change this to the version you are using
+    private static final String DB_CMD_PG_PATH = "C:\\Program Files\\PostgreSQL\\" + PG_VERSION + "\\bin\\pg_dump.exe"; // Change this to your pg_dump path
     private int backupCounter = 1;
 
     public ProductDaoImpl() {
@@ -210,10 +216,10 @@ public class ProductDaoImpl implements ProductDAO {
         String backupPath = backupFolder + File.separator + backupFileName;
 
         ProcessBuilder pb = new ProcessBuilder(
-                "C:\\Program Files\\PostgreSQL\\15\\bin\\pg_dump.exe",
-                "--host", "localhost",
-                "--port", "5432",
-                "--username", "postgres",
+                DB_CMD_PG_PATH,
+                "--host", DB_HOST,
+                "--port", DB_PORT,
+                "--username", DB_USER,
                 "--format", "plain",
                 "--file", backupPath,
                 "product_db"
@@ -221,7 +227,7 @@ public class ProductDaoImpl implements ProductDAO {
 
         try {
             final Map<String, String> env = pb.environment();
-            env.put("PGPASSWORD", "1234");
+            env.put("PGPASSWORD", DB_PASSWORD);
             Process p = pb.start();
             final BufferedReader r = new BufferedReader(
                     new InputStreamReader(p.getErrorStream()));
@@ -272,17 +278,17 @@ public class ProductDaoImpl implements ProductDAO {
 
         // Restore the backup
         ProcessBuilder pb = new ProcessBuilder(
-                "C:\\Program Files\\PostgreSQL\\15\\bin\\psql.exe",
-                "--host", "localhost",
-                "--port", "5432",
-                "--username", "postgres",
-                "--dbname", "product_db",
+                DB_CMD_PG_PATH,
+                "--host", DB_PORT,
+                "--port", DB_PORT,
+                "--username", DB_USER,
+                "--dbname", DB_DATABASE,
                 "--file", backupPath
         );
 
         try {
             final Map<String, String> env = pb.environment();
-            env.put("PGPASSWORD", "1234");
+            env.put("PGPASSWORD", DB_PASSWORD);
             Process p = pb.start();
             final BufferedReader r = new BufferedReader(
                     new InputStreamReader(p.getErrorStream()));
