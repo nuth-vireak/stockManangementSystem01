@@ -17,6 +17,33 @@ public class ProductDaoImpl implements ProductDAO {
     private static final String COUNTER_FILE_PATH = System.getProperty("user.home") + File.separator + "backup_counter.txt";
     private int backupCounter = 1;
 
+    public ProductDaoImpl() {
+        createDatabaseIfNotExists();
+    }
+
+    private void createDatabaseIfNotExists() {
+        try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/", DB_USER, DB_PASSWORD)) {
+            DatabaseMetaData meta = conn.getMetaData();
+            ResultSet rs = meta.getCatalogs();
+            boolean found = false;
+            while (rs.next()) {
+                String dbName = rs.getString(1);
+                if ("product_db".equalsIgnoreCase(dbName)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                try (Statement stmt = conn.createStatement()) {
+                    stmt.executeUpdate("CREATE DATABASE product_db");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
     @Override
     public void insert(List<Product> products) throws SQLException {
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
